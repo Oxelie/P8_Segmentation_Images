@@ -1,4 +1,5 @@
 data/
+data_raw/
 .lh/.lhignore
 .lh/.gitignore.json
 .DS_Store
