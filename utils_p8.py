@@ -15,6 +15,27 @@ Label = namedtuple(
     ],
 )
 
+
+class Voiture :
+    def __init__(self, marque, annee):
+        self.marque = marque
+        self.annee = annee
+    def afficher_info(self):
+        print(f"Marque: {self.marque}, Année: {self.annee}")
+    def age(self):
+        from datetime import datetime
+        current_year = datetime.now().year
+        return current_year - self.annee
+        
+# Instance
+my_car = Voiture("Renault", 2022)
+my_car.afficher_info()
+my_car.age()  # Affiche l'âge de la voiture
+        
+        
+        
+        
+        
 # Define the list of labels namedtuples
 labels = [
     Label("unlabeled", 0, 255, "void", 0, False, True, (0, 0, 0)),
