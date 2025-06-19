@@ -8,3 +8,12 @@ notes.ipynb
 env_p8_chantepie
 env_p8_chantepie/
 .lh/utils_p8.py.json
+.lh/classe_dataset.py.json
+.gitignore
+.gitignore
+__pycache__/utils_p8.cpython-310.pyc
+.gitignore
+.lh/count_classes.py.json
+full_train_datagen.pkl
+.gitignore
+__pycache__/classe_dataset.cpython-310.pyc
