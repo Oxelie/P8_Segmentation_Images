@@ -2,6 +2,7 @@
 # data & science
 import math
 import numpy as np
+from collections import Counter
 
 # system & tools
 import pathlib
@@ -27,7 +28,9 @@ tf.config.threading.set_inter_op_parallelism_threads(1)
 from utils_p8 import labels, TARGET_SIZE, COL_ORDER, show_nums_axes
 
 
-
+# Création d'une classe pour la création d'un dataset de segmentation d'image
+# Hérite de tf.keras.utils.PyDataset pour bénéficier des fonctionnalités de dataset de TensorFlow
+# Permet de charger, transformer et prétraiter des images et des masques pour l'entraînement d'un modèle de segmentation d'image.
 class ImageSegmentationDataset(tf.keras.utils.PyDataset):
     """
     Générer un dataset adapté à la segmentation d'image.
@@ -123,6 +126,20 @@ class ImageSegmentationDataset(tf.keras.utils.PyDataset):
     def num_samples(self) -> int:
         """ retourne le nombre total d’images dans le dataset"""
         return len(self.image_paths)
+    
+    @cached_property
+    def class_pixel_counts(self) -> dict:
+        """
+        Compte le nombre de pixels par classe sur l'ensemble des masques du dataset.
+        Retourne un dictionnaire {classe: nombre de pixels}.
+        """
+        counter = Counter()
+        for mask_path in self.mask_paths:
+            mask = self.load_mask_to_array(mask_path)
+            unique, counts = np.unique(mask, return_counts=True)
+            counter.update(dict(zip(unique, counts)))
+        return dict(counter)
+
 
     # @staticmethod = méthode utilitaire liée à la classe, mais indépendante de l’état de l’objet.
     # Cette méthode n’utilise pas l’instance (self) ni la classe elle-même (cls), elle agit uniquement sur les arguments explicitement passés à la fonction.
