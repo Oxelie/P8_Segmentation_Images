@@ -17,3 +17,4 @@ __pycache__/utils_p8.cpython-310.pyc
 full_train_datagen.pkl
 .gitignore
 __pycache__/classe_dataset.cpython-310.pyc
+count_classes/class_counter_full_train_datagen.pkl
