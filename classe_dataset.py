@@ -25,7 +25,8 @@ tf.config.threading.set_intra_op_parallelism_threads(1)
 tf.config.threading.set_inter_op_parallelism_threads(1)
 
 # Import local
-from utils_p8 import labels, TARGET_SIZE, COL_ORDER, show_nums_axes
+from utils_p8 import labels 
+
 
 
 # Création d'une classe pour la création d'un dataset de segmentation d'image
@@ -37,6 +38,16 @@ class ImageSegmentationDataset(tf.keras.utils.PyDataset):
     """
     # Dimension attendue 
     TARGET_SIZE = (256, 512)
+    
+    # dictionnaire des poids des classes pour gérer le déséquilibre (cf data.ipynb)
+    CLASS_WEIGHTS = {0: 0.04838020974460775,
+    1: 0.012538762170933082,
+    2: 0.022200139451355013,
+    3: 0.2756301963795006,
+    4: 0.032171216040987854,
+    5: 0.1366674770648851,
+    6: 0.4062850567550318,
+    7: 0.0661269423926988}
 
     # Initialisation de l'objet dataset
     def __init__( # déclaration du constructeur
@@ -49,7 +60,7 @@ class ImageSegmentationDataset(tf.keras.utils.PyDataset):
         normalize: Union[bool, str] = True, # booléen pour normalisation des données
         shuffle: bool = True, # booléen pour mélanger les données à chaque époque
         label_onehot: bool = False, # booléen pour la conversion en one_hot encoding des classes
-        sample_weights: Optional[List[float]] = None, # poids pour la pondération des classes en cas de déséquilibre
+        sample_weights: bool = False, # booléen pour l'utilisation des poids pour la pondération des classes en cas de déséquilibre
         model_name: Optional[str] = "unet", # nom du modèle utilisé pour la segmentation, par défaut "unet"
         **kwargs: Any,
     ) -> None:
@@ -58,9 +69,11 @@ class ImageSegmentationDataset(tf.keras.utils.PyDataset):
         # load les chemins des images et des masques et applique un aperçu si nécessaire
         self.image_paths, self.mask_paths = self.load_img_and_mask_paths(paths, preview)
 
-        # table de correspondances entre les IDs des labels et les catégorie
+       # table de correspondances entre les IDs des labels et les catégorie
         self.table_id2category = {label.id: label.categoryId for label in labels}
         self.table_category2name = {label.categoryId: label.category for label in labels}
+        # correspondance des IDs des catégories mères et de leurs noms
+        self.labels = labels
 
         # init les paramètres du dataset
         if not self.image_paths or not self.mask_paths:
@@ -70,8 +83,14 @@ class ImageSegmentationDataset(tf.keras.utils.PyDataset):
         self.normalize = normalize
         self.shuffle = shuffle
         self.label_onehot = label_onehot
-        self.sample_weights = sample_weights
+        #self.sample_weights = sample_weights
         self.model_name = model_name.lower() if model_name else "unet"
+        # Si sample_weights est True, on utilise les poids de classe
+        if sample_weights:
+            ordered_classes = sorted(self.CLASS_WEIGHTS.keys())
+            self.sample_weights = np.array([self.CLASS_WEIGHTS[cls] for cls in ordered_classes])
+        else:
+            self.sample_weights = None
 
         # Pipeline d'augmentations si requise
         if self.augmentations:
@@ -209,9 +228,24 @@ class ImageSegmentationDataset(tf.keras.utils.PyDataset):
                 return (img_array / 127.5) - 1.0
         return img_array
 
+    # def load_img_to_array(self, img_path: pathlib.Path) -> np.ndarray:
+    #     """Charge, resize et convertit en tableau numpy (float32) une image,
+    #     puis applique la normalisation avec 'preprocess_img'"""
+    #     img = tf.keras.utils.load_img(
+    #         str(img_path),
+    #         target_size=self.TARGET_SIZE,
+    #         color_mode="rgb",
+    #         interpolation="bilinear",
+    #     )
+    #     img_array = tf.keras.utils.img_to_array(img, dtype=np.float32)
+    #     return self.preprocess_img(img_array)
+    
     def load_img_to_array(self, img_path: pathlib.Path) -> np.ndarray:
-        """Charge, resize et convertit en tableau numpy (float32) une image,
-        puis applique la normalisation avec 'preprocess_img'"""
+        """
+        Charge, resize et convertit en tableau numpy (float32) une image,
+        puis applique la normalisation avec 'preprocess_img'.
+        Vérifie que la taille finale correspond bien à TARGET_SIZE.
+        """
         img = tf.keras.utils.load_img(
             str(img_path),
             target_size=self.TARGET_SIZE,
@@ -219,12 +253,36 @@ class ImageSegmentationDataset(tf.keras.utils.PyDataset):
             interpolation="bilinear",
         )
         img_array = tf.keras.utils.img_to_array(img, dtype=np.float32)
+        # Vérification de la taille
+        if img_array.shape[:2] != self.TARGET_SIZE:
+            img_array = tf.image.resize(img_array, self.TARGET_SIZE, method="bilinear").numpy()
         return self.preprocess_img(img_array)
 
+    # def load_mask_to_array(self, mask_path: pathlib.Path) -> np.ndarray:
+    #     """load en niveau de gris, resize un masque,
+    #     remplace pour chaque pixel les IDs des labels par les IDs des catégories mères correspondantes,
+    #     si spécifié, convertit le masque en one-hot encoding."""
+    #     mask = tf.keras.utils.load_img(
+    #         str(mask_path),
+    #         target_size=self.TARGET_SIZE,
+    #         color_mode="grayscale",
+    #         interpolation="nearest",
+    #     )
+    #     mask_array = tf.keras.utils.img_to_array(mask, dtype=np.int8)
+    #     mask_array = np.vectorize(self.table_id2category.get)(mask_array).squeeze()
+    #     if self.label_onehot:
+    #         mask_array = tf.keras.utils.to_categorical(
+    #             mask_array, num_classes=self.num_classes
+    #         )
+    #     return mask_array
+    
     def load_mask_to_array(self, mask_path: pathlib.Path) -> np.ndarray:
-        """load en niveau de gris, resize un masque,
-        remplace pour chaque pixel les IDs des labels par les IDs des catégories mères correspondantes,
-        si spécifié, convertit le masque en one-hot encoding."""
+        """
+        Charge, resize et convertit en tableau numpy (int8) un masque.
+        Remplace pour chaque pixel les IDs des labels par les IDs des catégories mères correspondantes.
+        Vérifie que la taille finale correspond bien à TARGET_SIZE.
+        Si spécifié, convertit le masque en one-hot encoding.
+        """
         mask = tf.keras.utils.load_img(
             str(mask_path),
             target_size=self.TARGET_SIZE,
@@ -232,12 +290,52 @@ class ImageSegmentationDataset(tf.keras.utils.PyDataset):
             interpolation="nearest",
         )
         mask_array = tf.keras.utils.img_to_array(mask, dtype=np.int8)
+        # Vérification de la taille
+        if mask_array.shape[:2] != self.TARGET_SIZE:
+            mask_array = tf.image.resize(mask_array, self.TARGET_SIZE, method="nearest").numpy()
         mask_array = np.vectorize(self.table_id2category.get)(mask_array).squeeze()
         if self.label_onehot:
             mask_array = tf.keras.utils.to_categorical(
                 mask_array, num_classes=self.num_classes
             )
         return mask_array
+    
+    def __getitem__(
+        self, index: int
+    ) -> Union[
+        Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray, np.ndarray]
+    ]:
+        """
+        Récupère un batch d’images et de masques à l’index donné.
+        Vérifie que toutes les images et masques du batch ont la même taille.
+        """
+        start_idx = index * self.batch_size
+        end_idx = min(start_idx + self.batch_size, self.num_samples)
+        if start_idx >= self.num_samples:
+            raise IndexError("Index out of range")
+
+        batch_paths = list(
+            zip(self.image_paths[start_idx:end_idx], self.mask_paths[start_idx:end_idx])
+        )
+        results = [self.load_and_augment(pair) for pair in batch_paths]
+
+        if self.sample_weights is not None:
+            images, masks, weights = zip(*results)
+            images = np.asarray(images)
+            masks = np.asarray(masks)
+            weights = np.asarray(weights)
+            # Vérification des shapes
+            assert all(img.shape[:2] == self.TARGET_SIZE for img in images), "Images batch shape mismatch"
+            assert all(mask.shape[:2] == self.TARGET_SIZE for mask in masks), "Masks batch shape mismatch"
+            return images, masks, weights
+        else:
+            images, masks = zip(*results)
+            images = np.asarray(images)
+            masks = np.asarray(masks)
+            assert all(img.shape[:2] == self.TARGET_SIZE for img in images), "Images batch shape mismatch"
+            assert all(mask.shape[:2] == self.TARGET_SIZE for mask in masks), "Masks batch shape mismatch"
+            return images, masks
+
 
     def load_and_augment(
         self, paths: Tuple[pathlib.Path, pathlib.Path]
