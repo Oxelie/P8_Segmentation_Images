@@ -181,29 +181,35 @@ class ImageSegmentationDataset(tf.keras.utils.PyDataset):
         length = math.ceil(self.num_samples / self.batch_size)
         return length
 
-    def __getitem__(
-        self, index: int
-    ) -> Union[
+
+    def __getitem__(self, index: int) -> Union[
         Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray, np.ndarray]
     ]:
-        """Récupère un batch d’images et de masques à l’index donné (pour l’entraînement ou la validation)
-        calcul des index de début et de fin de chaque batch, récupère les paths des images et des masques correspondants,
-        charge et trasnforme les images et les masques via 'load_and_augment' 
-        et retourne les images, masques et les poids d'échantillons s'ils sont fournis dans le cas de classes déséquilibrées."""
         start_idx = index * self.batch_size
         end_idx = min(start_idx + self.batch_size, self.num_samples)
         if start_idx >= self.num_samples:
             raise IndexError("Index out of range")
 
-        batch_paths = list(
-            zip(self.image_paths[start_idx:end_idx], self.mask_paths[start_idx:end_idx])
-        )
+        batch_paths = list(zip(self.image_paths[start_idx:end_idx], self.mask_paths[start_idx:end_idx]))
         results = [self.load_and_augment(pair) for pair in batch_paths]
+        # Filtrer les résultats invalides
+        results = [r for r in results if r is not None]
 
+        if not results:
+            print(f"Batch {index} vide ou invalide")
+            raise ValueError("Aucun batch valide n'a été généré (vérifier les fichiers d'entrée).")
+
+        # Gestion selon la présence des poids
         if self.sample_weights is not None:
+            results = [r for r in results if len(r) == 3]
+            if not results:
+                raise ValueError("Aucun batch avec poids valide.")
             images, masks, weights = zip(*results)
             return np.asarray(images), np.asarray(masks), np.asarray(weights)
         else:
+            results = [r for r in results if len(r) == 2]
+            if not results:
+                raise ValueError("Aucun batch sans poids valide.")
             images, masks = zip(*results)
             return np.asarray(images), np.asarray(masks)
 
@@ -305,33 +311,49 @@ class ImageSegmentationDataset(tf.keras.utils.PyDataset):
     ) -> Union[
         Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray, np.ndarray]
     ]:
-        """
-        Récupère un batch d’images et de masques à l’index donné.
-        Vérifie que toutes les images et masques du batch ont la même taille.
-        """
         start_idx = index * self.batch_size
         end_idx = min(start_idx + self.batch_size, self.num_samples)
         if start_idx >= self.num_samples:
             raise IndexError("Index out of range")
 
-        batch_paths = list(
-            zip(self.image_paths[start_idx:end_idx], self.mask_paths[start_idx:end_idx])
-        )
+        batch_paths = list(zip(self.image_paths[start_idx:end_idx], self.mask_paths[start_idx:end_idx]))
         results = [self.load_and_augment(pair) for pair in batch_paths]
+        # Filtrer les résultats invalides
+        results = [r for r in results if r is not None]
 
         if self.sample_weights is not None:
+            # Filtrer les tuples de longueur 3
+            results = [r for r in results if isinstance(r, tuple) and len(r) == 3]
+            if not results:
+                raise ValueError("Aucun batch avec poids valide.")
             images, masks, weights = zip(*results)
             images = np.asarray(images)
             masks = np.asarray(masks)
             weights = np.asarray(weights)
-            # Vérification des shapes
+            # Vérification stricte des shapes
+            for i, img in enumerate(images):
+                if img.shape[:2] != self.TARGET_SIZE:
+                    print(f"Image {i} shape: {img.shape}, attendu: {self.TARGET_SIZE}")
+            for i, mask in enumerate(masks):
+                if mask.shape[:2] != self.TARGET_SIZE:
+                    print(f"Mask {i} shape: {mask.shape}, attendu: {self.TARGET_SIZE}")
             assert all(img.shape[:2] == self.TARGET_SIZE for img in images), "Images batch shape mismatch"
             assert all(mask.shape[:2] == self.TARGET_SIZE for mask in masks), "Masks batch shape mismatch"
             return images, masks, weights
         else:
+            # Filtrer les tuples de longueur 2
+            results = [r for r in results if isinstance(r, tuple) and len(r) == 2]
+            if not results:
+                raise ValueError("Aucun batch sans poids valide.")
             images, masks = zip(*results)
             images = np.asarray(images)
             masks = np.asarray(masks)
+            for i, img in enumerate(images):
+                if img.shape[:2] != self.TARGET_SIZE:
+                    print(f"Image {i} shape: {img.shape}, attendu: {self.TARGET_SIZE}")
+            for i, mask in enumerate(masks):
+                if mask.shape[:2] != self.TARGET_SIZE:
+                    print(f"Mask {i} shape: {mask.shape}, attendu: {self.TARGET_SIZE}")
             assert all(img.shape[:2] == self.TARGET_SIZE for img in images), "Images batch shape mismatch"
             assert all(mask.shape[:2] == self.TARGET_SIZE for mask in masks), "Masks batch shape mismatch"
             return images, masks
@@ -345,27 +367,37 @@ class ImageSegmentationDataset(tf.keras.utils.PyDataset):
         """charge l’image et le masque correspondant, applique sur le masque les poids pour les classes déséquilibrées si spécifié,
         si les augmentations sont activées, applique les transformations avec Albumentations sur l'image et le masque (et les poids si présents)
         """
-        img_path, mask_path = paths
-        img = self.load_img_to_array(img_path)
-        mask = self.load_mask_to_array(mask_path)
+        try :
+            img_path, mask_path = paths
+            img = self.load_img_to_array(img_path)
+            mask = self.load_mask_to_array(mask_path)
 
-        if self.sample_weights is not None:
-            weights = np.take(self.sample_weights, mask)
-            if self.augmentations:
-                augmented = self.compose(image=img, mask=mask, sample_weights=mask)
-                return (
-                    augmented["image"],
-                    augmented["mask"],
-                    augmented["sample_weights"],
-                )
+            if self.sample_weights is not None:
+                weights = np.take(self.sample_weights, mask)
+                if self.augmentations:
+                    augmented = self.compose(image=img, mask=mask, sample_weights=mask)
+                    return (
+                        augmented["image"],
+                        augmented["mask"],
+                        augmented["sample_weights"],
+                    )
+                else:
+                    return img, mask, weights
             else:
-                return img, mask, weights
-        else:
-            if self.augmentations:
-                augmented = self.compose(image=img, mask=mask)
-                return augmented["image"], augmented["mask"]
+                if self.augmentations:
+                    augmented = self.compose(image=img, mask=mask)
+                    return augmented["image"], augmented["mask"]
+                else:
+                    return img, mask
+        except Exception as e:
+            print(f"Erreur lors du chargement ou de l'augmentation : {paths} - {e}")
+            # Retourne des tableaux vides du bon format
+            image_shape = (self.TARGET_SIZE[0], self.TARGET_SIZE[1], 3)
+            mask_shape = (self.TARGET_SIZE[0], self.TARGET_SIZE[1])
+            if self.sample_weights is not None:
+                return np.zeros(image_shape, dtype=np.float32), np.zeros(mask_shape, dtype=np.int8), np.zeros(mask_shape, dtype=np.float32)
             else:
-                return img, mask
+                return np.zeros(image_shape, dtype=np.float32), np.zeros(mask_shape, dtype=np.int8)
             
     def get_image_and_mask(
         self, index: int
