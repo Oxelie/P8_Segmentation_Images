@@ -19,3 +19,7 @@ full_train_datagen.pkl
 .gitignore
 __pycache__/classe_dataset.cpython-310.pyc
 count_classes/class_counter_full_train_datagen.pkl
+.lh/requirements.txt.json
+.lh/api/api.py.json
+.lh/api/Procfile.json
+.gitignore
