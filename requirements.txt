@@ -105,3 +105,4 @@ tensorflow
 pillow
 numpy
 gunicorn
+pytest

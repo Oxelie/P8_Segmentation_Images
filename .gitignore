@@ -1,6 +1,7 @@
 data/
 data_raw/
 mlruns/*
+.lh/*
 .lh/.lhignore
 .lh/.gitignore.json
 .DS_Store
@@ -23,3 +24,4 @@ count_classes/class_counter_full_train_datagen.pkl
 .lh/api/api.py.json
 .lh/api/Procfile.json
 .gitignore
+.lh/api/requirements.txt.json
