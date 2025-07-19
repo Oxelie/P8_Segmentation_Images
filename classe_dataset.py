@@ -200,16 +200,32 @@ class ImageSegmentationDataset(tf.keras.utils.PyDataset):
             raise ValueError("Aucun batch valide n'a été généré (vérifier les fichiers d'entrée).")
 
         # Gestion selon la présence des poids
+        # if self.sample_weights is not None:
+        #     results = [r for r in results if len(r) == 3]
+        #     if not results:
+        #         raise ValueError("Aucun batch avec poids valide.")
+        #     images, masks, weights = zip(*results)
+        #     return np.asarray(images), np.asarray(masks), np.asarray(weights)
+        
         if self.sample_weights is not None:
-            results = [r for r in results if len(r) == 3]
+            results = [r for r in results if isinstance(r, tuple) and len(r) == 3]
             if not results:
-                raise ValueError("Aucun batch avec poids valide.")
+                # Retourne des tableaux vides pour éviter l'erreur de déballage
+                return np.empty((0, *self.TARGET_SIZE, 3)), np.empty((0, *self.TARGET_SIZE)), np.empty((0, *self.TARGET_SIZE))
             images, masks, weights = zip(*results)
             return np.asarray(images), np.asarray(masks), np.asarray(weights)
+    
+        # else:
+        #     results = [r for r in results if len(r) == 2]
+        #     if not results:
+        #         raise ValueError("Aucun batch sans poids valide.")
+        #     images, masks = zip(*results)
+        #     return np.asarray(images), np.asarray(masks)
+        
         else:
-            results = [r for r in results if len(r) == 2]
+            results = [r for r in results if isinstance(r, tuple) and len(r) == 2]
             if not results:
-                raise ValueError("Aucun batch sans poids valide.")
+                return np.empty((0, *self.TARGET_SIZE, 3)), np.empty((0, *self.TARGET_SIZE))
             images, masks = zip(*results)
             return np.asarray(images), np.asarray(masks)
 
