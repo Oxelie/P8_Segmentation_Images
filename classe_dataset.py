@@ -249,18 +249,6 @@ class ImageSegmentationDataset(tf.keras.utils.PyDataset):
             elif self.model_name == "vgg16_unet": 
                 return (img_array / 127.5) - 1.0
         return img_array
-
-    # def load_img_to_array(self, img_path: pathlib.Path) -> np.ndarray:
-    #     """Charge, resize et convertit en tableau numpy (float32) une image,
-    #     puis applique la normalisation avec 'preprocess_img'"""
-    #     img = tf.keras.utils.load_img(
-    #         str(img_path),
-    #         target_size=self.TARGET_SIZE,
-    #         color_mode="rgb",
-    #         interpolation="bilinear",
-    #     )
-    #     img_array = tf.keras.utils.img_to_array(img, dtype=np.float32)
-    #     return self.preprocess_img(img_array)
     
     def load_img_to_array(self, img_path: pathlib.Path) -> np.ndarray:
         """
