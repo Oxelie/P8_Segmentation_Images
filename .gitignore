@@ -25,3 +25,12 @@ count_classes/class_counter_full_train_datagen.pkl
 .lh/api/Procfile.json
 .gitignore
 .lh/api/requirements.txt.json
+model.h5
+model.keras
+model_tf/fingerprint.pb
+model_tf/saved_model.pb
+.gitignore
+model_tf/variables/variables.index
+.gitignore
+model_tf/variables/variables.data-00000-of-00001
+.gitignore
