@@ -6,8 +6,9 @@ import io
 
 app = Flask(__name__)
 
-# Charge le modèle entraîné (dossier SavedModel ou .h5)
-model = tf.keras.models.load_model("model_tf")
+# Charge le modèle entraîné
+MODEL_PATH = os.path.join(os.path.dirname(__file__), "../model_tf")
+model = tf.keras.models.load_model(MODEL_PATH)
 
 # Taille attendue par le modèle
 TARGET_SIZE = (256, 512)

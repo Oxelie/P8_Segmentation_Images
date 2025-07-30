@@ -1,6 +1,20 @@
 import pytest
 from api import app
 
+
+import requests
+
+def test_predict_endpoint():
+    url = "http://localhost:5000/predict"
+    # Utilise une petite image de test
+    with open("tests/test_image.png", "rb") as img:
+        files = {"image": img}
+        response = requests.post(url, files=files)
+    assert response.status_code == 200
+    data = response.json()
+    assert "mask" in data
+    
+
 @pytest.fixture
 def client():
     with app.test_client() as client:
