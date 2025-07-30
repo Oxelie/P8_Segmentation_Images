@@ -1,5 +1,4 @@
-pip install streamlit 
-pip install requests
+
 absl-py==2.1.0
 albucore==0.0.23
 albumentations==2.0.3
@@ -108,3 +107,5 @@ pillow
 numpy
 gunicorn
 pytest
+streamlit
+requests
