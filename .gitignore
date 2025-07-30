@@ -7,7 +7,6 @@ data/test/frankfurt_000000_000294_leftImg8bit.png
 data_raw/P8_Cityscapes_gtFine_trainvaltest/gtFine/test/berlin/berlin_000000_000019_gtFine_color.png
 __pycache__/*
 
-model_tf/*
 tests/.DS_Store
 streamlit-segmentation-app/src/.DS_Store
 streamlit-segmentation-app/.DS_Store
