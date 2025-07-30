@@ -159,6 +159,13 @@ class ImageSegmentationDataset(tf.keras.utils.PyDataset):
             counter.update(dict(zip(unique, counts)))
         return dict(counter)
 
+    @cached_property
+    def categoryid_to_name(self) -> dict:
+        """
+        Dictionnaire de correspondance des id des catégories mères et de leurs noms, récupéré à partir de labels 
+        retourne {categoryId: category_name} 
+        """
+        return {label.categoryId: label.category for label in self.labels}
 
     # @staticmethod = méthode utilitaire liée à la classe, mais indépendante de l’état de l’objet.
     # Cette méthode n’utilise pas l’instance (self) ni la classe elle-même (cls), elle agit uniquement sur les arguments explicitement passés à la fonction.
