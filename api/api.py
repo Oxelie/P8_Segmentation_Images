@@ -8,7 +8,8 @@ import os
 app = Flask(__name__)
 
 # Charge le modèle entraîné
-MODEL_PATH = os.path.join(os.path.dirname(__file__), "../model_tf")
+MODEL_PATH = os.path.join(os.path.dirname(__file__), "../model.keras")
+
 model = tf.keras.models.load_model(MODEL_PATH)
 
 # Taille attendue par le modèle
