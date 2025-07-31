@@ -11,8 +11,7 @@ tests/.DS_Store
 streamlit-segmentation-app/src/.DS_Store
 streamlit-segmentation-app/.DS_Store
 count_classes/class_counter_full_train_datagen.pkl
-model.keras
-model.h5
+
 full_train_datagen.pkl
 .DS_Store
 modelisation_p2.ipynb
