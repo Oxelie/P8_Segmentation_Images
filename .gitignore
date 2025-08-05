@@ -32,3 +32,5 @@ model_tf/variables/variables.index
 .gitignore
 model_tf/variables/variables.data-00000-of-00001
 .gitignore
+*.keras
+*.h5
