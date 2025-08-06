@@ -34,3 +34,7 @@ model_tf/variables/variables.data-00000-of-00001
 .gitignore
 *.keras
 *.h5
+modelUNet_mini_tf/variables/variables.data-00000-of-00001
+modelUNet_mini_tf/fingerprint.pb
+modelUNet_mini_tf/saved_model.pb
+modelUNet_mini_tf/variables/variables.index
