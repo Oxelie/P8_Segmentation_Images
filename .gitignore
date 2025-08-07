@@ -38,3 +38,9 @@ modelUNet_mini_tf/variables/variables.data-00000-of-00001
 modelUNet_mini_tf/fingerprint.pb
 modelUNet_mini_tf/saved_model.pb
 modelUNet_mini_tf/variables/variables.index
+modelVGG16_UNet_tf/fingerprint.pb
+.gitignore
+modelVGG16_UNet_tf/variables/variables.data-00000-of-00001
+.gitignore
+modelVGG16_UNet_tf/saved_model.pb
+modelVGG16_UNet_tf/variables/variables.index
