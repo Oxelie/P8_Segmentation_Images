@@ -458,13 +458,44 @@ class ImageSegmentationDataset(tf.keras.utils.PyDataset):
         plt.tight_layout()
         plt.show()
 
+    # def show_prediction(
+    #     self, model: Any, index: int, figsize: Tuple[int, int] = (15, 6)
+    # ) -> None:
+    #     """affiche l'image originale, le masque d'origine (réalité terrain) et le masque prédit du modèle pour un échantillon"""
+    #     img, mask, paths = self.get_image_and_mask(index)
+    #     img_path, mask_path = paths
+    #     mask_pred = self.get_prediction(model, index)
+
+    #     orig_img = np.array(Image.open(img_path))
+
+    #     if self.label_onehot:
+    #         mask = np.argmax(mask, axis=-1)
+    #     if isinstance(self.normalize, str):
+    #         img = (img - img.min()) / (img.max() - img.min())
+
+    #     fig, axs = plt.subplots(1, 3, figsize=figsize)
+    #     fig.suptitle(f"{model.name} Predictions", fontsize=16)
+
+    #     axs[0].imshow(orig_img)
+    #     axs[0].set_title("Original Image")
+    #     axs[1].imshow(mask, cmap="Greys")
+    #     axs[1].set_title("Ground Truth Mask")
+    #     axs[2].imshow(mask_pred, cmap="Greys")
+    #     axs[2].set_title("Predicted Mask")
+    #     for ax in axs:
+    #         ax.axis("off")
+    #     plt.tight_layout()
+    #     plt.show()
+    
     def show_prediction(
         self, model: Any, index: int, figsize: Tuple[int, int] = (15, 6)
     ) -> None:
-        """affiche l'image originale, le masque d'origine (réalité terrain) et le masque prédit du modèle pour un échantillon"""
+        """Affiche l'image originale, le masque d'origine (réalité terrain) et le masque prédit du modèle pour un échantillon, en couleur."""
         img, mask, paths = self.get_image_and_mask(index)
         img_path, mask_path = paths
+        time = time.time()
         mask_pred = self.get_prediction(model, index)
+        time2 = time.time()
 
         orig_img = np.array(Image.open(img_path))
 
@@ -473,14 +504,18 @@ class ImageSegmentationDataset(tf.keras.utils.PyDataset):
         if isinstance(self.normalize, str):
             img = (img - img.min()) / (img.max() - img.min())
 
+        # Palette de couleurs pour les classes
+        num_classes = self.num_classes if hasattr(self, "num_classes") else int(mask.max() + 1)
+        cmap = plt.get_cmap("tab10", num_classes)
+
         fig, axs = plt.subplots(1, 3, figsize=figsize)
-        fig.suptitle(f"{model.name} Predictions", fontsize=16)
+        fig.suptitle(f"Prédictions {model.name}\nTemps de prédiction : {time2 - time:.2f} secondes", fontsize=16)
 
         axs[0].imshow(orig_img)
         axs[0].set_title("Original Image")
-        axs[1].imshow(mask, cmap="Greys")
+        im1 = axs[1].imshow(mask, cmap=cmap, vmin=0, vmax=num_classes-1)
         axs[1].set_title("Ground Truth Mask")
-        axs[2].imshow(mask_pred, cmap="Greys")
+        im2 = axs[2].imshow(mask_pred, cmap=cmap, vmin=0, vmax=num_classes-1)
         axs[2].set_title("Predicted Mask")
         for ax in axs:
             ax.axis("off")
