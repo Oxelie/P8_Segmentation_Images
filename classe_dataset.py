@@ -6,6 +6,7 @@ from collections import Counter
 
 # system & tools
 import pathlib
+import time
 
 # POO
 from functools import cached_property
@@ -493,7 +494,7 @@ class ImageSegmentationDataset(tf.keras.utils.PyDataset):
         """Affiche l'image originale, le masque d'origine (réalité terrain) et le masque prédit du modèle pour un échantillon, en couleur."""
         img, mask, paths = self.get_image_and_mask(index)
         img_path, mask_path = paths
-        time = time.time()
+        time1 = time.time()
         mask_pred = self.get_prediction(model, index)
         time2 = time.time()
 
@@ -509,7 +510,7 @@ class ImageSegmentationDataset(tf.keras.utils.PyDataset):
         cmap = plt.get_cmap("tab10", num_classes)
 
         fig, axs = plt.subplots(1, 3, figsize=figsize)
-        fig.suptitle(f"Prédictions {model.name}\nTemps de prédiction : {time2 - time:.2f} secondes", fontsize=16)
+        fig.suptitle(f"Prédictions {model.name}\nTemps de prédiction : {time2 - time1} secondes", fontsize=16)
 
         axs[0].imshow(orig_img)
         axs[0].set_title("Original Image")
