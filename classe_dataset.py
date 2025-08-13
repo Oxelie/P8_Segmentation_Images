@@ -20,6 +20,8 @@ from matplotlib.image import imread
 from PIL import Image
 import albumentations as A
 import tensorflow as tf
+from tensorflow.keras.applications.mobilenet_v3 import preprocess_input as mnv3_preprocess_input
+
 
 # TensorFlow utilise un seul thread pour garantir la reproductibilité
 tf.config.threading.set_intra_op_parallelism_threads(1)
@@ -250,12 +252,15 @@ class ImageSegmentationDataset(tf.keras.utils.PyDataset):
         Applique la normalisation des images adaptée selon le modèle choisi.
         - UNet et UNet_mini : normalisation entre 0 et 1
         - VGG16_UNet : normalisation entre -1 et 1
+        - MobileNetV3_UNet : tf.keras.applications.mobilenet_v3.preprocess_input ([-1, 1])
         """
         if isinstance(self.normalize, bool) and self.normalize:
             if self.model_name in ["unet", "unet_mini"]:
                 return img_array / 255.0
             elif self.model_name == "vgg16_unet": 
                 return (img_array / 127.5) - 1.0
+            elif self.model_name == "mobilenetv3small_unet":
+                return mnv3_preprocess_input(img_array)
         return img_array
     
     def load_img_to_array(self, img_path: pathlib.Path) -> np.ndarray:
