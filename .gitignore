@@ -44,3 +44,8 @@ modelVGG16_UNet_tf/variables/variables.data-00000-of-00001
 .gitignore
 modelVGG16_UNet_tf/saved_model.pb
 modelVGG16_UNet_tf/variables/variables.index
+modelMobileNetV3Small_UNet_tf/fingerprint.pb
+.gitignore
+modelMobileNetV3Small_UNet_tf/saved_model.pb
+modelMobileNetV3Small_UNet_tf/variables/variables.data-00000-of-00001
+modelMobileNetV3Small_UNet_tf/variables/variables.index

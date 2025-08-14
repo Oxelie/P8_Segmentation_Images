@@ -20,7 +20,7 @@ from matplotlib.image import imread
 from PIL import Image
 import albumentations as A
 import tensorflow as tf
-from tensorflow.keras.applications.mobilenet_v3 import preprocess_input as mnv3_preprocess_input
+from keras.applications.mobilenet_v3 import preprocess_input as mnv3_preprocess_input
 
 
 # TensorFlow utilise un seul thread pour garantir la reproductibilité
