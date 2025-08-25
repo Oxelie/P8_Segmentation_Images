@@ -49,3 +49,9 @@ modelMobileNetV3Small_UNet_tf/fingerprint.pb
 modelMobileNetV3Small_UNet_tf/saved_model.pb
 modelMobileNetV3Small_UNet_tf/variables/variables.data-00000-of-00001
 modelMobileNetV3Small_UNet_tf/variables/variables.index
+mlf_1/*
+mlf_1_arti/*
+modelMobileNetV3Small_UNet_finetuned_no_datagen_tf/fingerprint.pb
+modelMobileNetV3Small_UNet_finetuned_no_datagen_tf/saved_model.pb
+modelMobileNetV3Small_UNet_finetuned_no_datagen_tf/variables/variables.data-00000-of-00001
+modelMobileNetV3Small_UNet_finetuned_no_datagen_tf/variables/variables.index

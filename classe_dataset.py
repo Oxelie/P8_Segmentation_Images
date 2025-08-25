@@ -23,9 +23,8 @@ import tensorflow as tf
 from keras.applications.mobilenet_v3 import preprocess_input as mnv3_preprocess_input
 
 
-# TensorFlow utilise un seul thread pour garantir la reproductibilité
-tf.config.threading.set_intra_op_parallelism_threads(1)
-tf.config.threading.set_inter_op_parallelism_threads(1)
+tf.config.threading.set_intra_op_parallelism_threads(8)
+tf.config.threading.set_inter_op_parallelism_threads(8)
 
 # Import local
 from utils_p8 import labels 
