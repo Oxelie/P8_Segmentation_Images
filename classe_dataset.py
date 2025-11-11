@@ -21,6 +21,7 @@ from PIL import Image
 import albumentations as A
 import tensorflow as tf
 from keras.applications.mobilenet_v3 import preprocess_input as mnv3_preprocess_input
+from tensorflow.keras.applications.resnet50 import preprocess_input as resnet_preprocess_input
 
 
 tf.config.threading.set_intra_op_parallelism_threads(8)
@@ -252,7 +253,14 @@ class ImageSegmentationDataset(tf.keras.utils.PyDataset):
         - UNet et UNet_mini : normalisation entre 0 et 1
         - VGG16_UNet : normalisation entre -1 et 1
         - MobileNetV3_UNet : tf.keras.applications.mobilenet_v3.preprocess_input ([-1, 1])
+        - ResNet50_UNet : resnet_preprocess_input (RGB->BGR + mean subtraction, images en [0,255])
         """
+        if not isinstance(img_array, np.ndarray):
+            img_array = np.array(img_array)
+
+        # si image encodée en [0,1], remultiplie pour revenir à [0,255] avant preprocess_input
+        needs_rescale = img_array.dtype != np.uint8 and img_array.max() <= 1.0
+    
         if isinstance(self.normalize, bool) and self.normalize:
             if self.model_name in ["unet", "unet_mini"]:
                 return img_array / 255.0
@@ -260,6 +268,12 @@ class ImageSegmentationDataset(tf.keras.utils.PyDataset):
                 return (img_array / 127.5) - 1.0
             elif self.model_name == "mobilenetv3small_unet":
                 return mnv3_preprocess_input(img_array)
+            elif self.model_name in ["resnet50_unet", "resnet_unet"]:
+                arr = img_array.astype(np.float32)
+                if needs_rescale:
+                    arr = arr * 255.0
+            # resnet_preprocess_input gère conversion RGB->BGR et soustraction des moyennes
+            return resnet_preprocess_input(arr)
         return img_array
     
     def load_img_to_array(self, img_path: pathlib.Path) -> np.ndarray:
