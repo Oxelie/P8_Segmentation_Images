@@ -7,6 +7,8 @@ from collections import Counter
 # system & tools
 import pathlib
 import time
+import io
+import base64
 
 # POO
 from functools import cached_property
@@ -540,3 +542,11 @@ class ImageSegmentationDataset(tf.keras.utils.PyDataset):
             ax.axis("off")
         plt.tight_layout()
         plt.show()
+        
+        buf = io.BytesIO()
+        img_mask_pred = im2.savefig(buf, format='png')   
+        buf.seek(0)
+        
+        encoded = base64.b64encode(buf.read()).decode('utf-8')
+        
+        return encoded
