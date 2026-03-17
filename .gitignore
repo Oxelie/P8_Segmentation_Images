@@ -56,3 +56,9 @@ modelMobileNetV3Small_UNet_finetuned_no_datagen_tf/saved_model.pb
 modelMobileNetV3Small_UNet_finetuned_no_datagen_tf/variables/variables.data-00000-of-00001
 modelMobileNetV3Small_UNet_finetuned_no_datagen_tf/variables/variables.index
 streamlit-segmentation-app/src/__pycache__/api_client.cpython-310.pyc
+old_models/
+mlruns/
+*.h5
+*.keras
+*_tf/
+checkpoints/
