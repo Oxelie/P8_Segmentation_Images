@@ -15,7 +15,7 @@ from utils_p8 import labels
 
 
 # Charge le modèle entraîné
-MODEL_PATH = os.path.join(os.path.dirname(__file__), "../model.keras") 
+MODEL_PATH = os.path.join(os.path.dirname(__file__), "../models/models/ResNet50_UNet/model_ResNet50_UNet.keras") 
 # actuellement dans le dossier /Users/stephanieduhem/Documents/_DIPLOMES_CURSUS_/MASTER_AI_ENGINEER/openclassroom/projet_8/P8_Segmentation_Images/mlf_1/models 
 # + sous dossiers aux noms des modèles REsNet50_Unet_50epochs_data_augm
 
@@ -31,6 +31,28 @@ model = tf.keras.models.load_model(
 
 # Taille attendue par le modèle
 TARGET_SIZE = (256, 512)
+
+
+# path vers les nouveaux dossier train et test
+test_dir = pathlib.Path("../data/test")
+
+
+# récupération des chemins pour les images et les masques du test
+image_paths_test = sorted(list(test_dir.glob("*leftImg8bit.png")))
+mask_paths_test = sorted(list(test_dir.glob("*labelIds.png")))
+test_paths = list(zip(image_paths_test, mask_paths_test))
+
+test_dataset = ImageSegmentationDataset(
+    paths=test_paths,
+    labels=labels,
+    batch_size=4,
+    augmentations=False,        # Pas d'augmentation pour le test
+    normalize=True,
+    shuffle=False,
+    label_onehot=False,
+    sample_weights=True,        # Poids de classes activés
+    model_name="unet_mini") #pour normalisation adpatée au modèle
+
 
 
 # fonction de prétraitement des images d'entrée, adaptée selon le modèle choisi
@@ -70,13 +92,13 @@ app = Flask(__name__)
 # cet API c'est pour la liste des images de test 
 @app.route("/list_img", methods=["GET"])
 def list_images():
-    filenames = os.listdir("../data/test")
-    usable_img = []
-    for filename in filenames:
-        if filename.endswith("_leftImg8bit.png") :
-            usable_img.append(filename)
-    
-    return jsonify(usable_img)
+    # filenames = test_dataset.image_paths
+    # usable_img = []
+    # for filename in filenames:
+    #     if filename.endswith("_leftImg8bit.png") :
+    #         usable_img.append(filename)
+    # print("test_dataset.image_paths:", test_dataset.image_paths)
+    return jsonify([str(p) for p in test_dataset.image_paths])
 
 selected_img = None
 
@@ -95,25 +117,7 @@ def select_image():
 # 
 
 
-# path vers les nouveaux dossier train et test
-test_dir = pathlib.Path("../data/test")
 
-
-# récupération des chemins pour les images et les masques du test
-image_paths_test = sorted(list(test_dir.glob("*leftImg8bit.png")))
-mask_paths_test = sorted(list(test_dir.glob("*labelIds.png")))
-test_paths = list(zip(image_paths_test, mask_paths_test))
-
-test_dataset = ImageSegmentationDataset(
-    paths=test_paths,
-    labels=labels,
-    batch_size=4,
-    augmentations=False,        # Pas d'augmentation pour le test
-    normalize=True,
-    shuffle=False,
-    label_onehot=False,
-    sample_weights=True,        # Poids de classes activés
-    model_name="unet_mini") #pour normalisation adpatée au modèle
 
 
 # faire un 2eme API pour la prédiction du masque (endpoint /predict) 
@@ -122,7 +126,7 @@ def predict_mask():
     global test_dataset
     
     
-    img_mask_pred = test_dataset.show_prediction(model, 42)
+    img_mask_pred = test_dataset.show_prediction(model, request.json["image_index"])
     
     return jsonify({"img_mask_pred": img_mask_pred})
     
@@ -146,4 +150,4 @@ def predict_mask():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(port = 4444, debug=True)
