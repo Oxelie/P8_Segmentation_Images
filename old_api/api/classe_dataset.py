@@ -17,6 +17,8 @@ from typing import Optional, Union, Tuple, List, NamedTuple, Any
 # graphiques
 import matplotlib.pyplot as plt
 from matplotlib.image import imread
+import matplotlib
+matplotlib.use("Agg")  
 
 # computer vision / CNN
 from PIL import Image
@@ -194,6 +196,53 @@ class ImageSegmentationDataset(tf.keras.utils.PyDataset):
         return length
 
 
+    def __getitem__(self, index: int) -> Union[
+        Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray, np.ndarray]
+    ]:
+        start_idx = index * self.batch_size
+        end_idx = min(start_idx + self.batch_size, self.num_samples)
+        if start_idx >= self.num_samples:
+            raise IndexError("Index out of range")
+
+        batch_paths = list(zip(self.image_paths[start_idx:end_idx], self.mask_paths[start_idx:end_idx]))
+        results = [self.load_and_augment(pair) for pair in batch_paths]
+        # Filtrer les résultats invalides
+        results = [r for r in results if r is not None]
+
+        if not results:
+            print(f"Batch {index} vide ou invalide")
+            raise ValueError("Aucun batch valide n'a été généré (vérifier les fichiers d'entrée).")
+
+        # Gestion selon la présence des poids
+        # if self.sample_weights is not None:
+        #     results = [r for r in results if len(r) == 3]
+        #     if not results:
+        #         raise ValueError("Aucun batch avec poids valide.")
+        #     images, masks, weights = zip(*results)
+        #     return np.asarray(images), np.asarray(masks), np.asarray(weights)
+        
+        if self.sample_weights is not None:
+            results = [r for r in results if isinstance(r, tuple) and len(r) == 3]
+            if not results:
+                # Retourne des tableaux vides pour éviter l'erreur de déballage
+                return np.empty((0, *self.TARGET_SIZE, 3)), np.empty((0, *self.TARGET_SIZE)), np.empty((0, *self.TARGET_SIZE))
+            images, masks, weights = zip(*results)
+            return np.asarray(images), np.asarray(masks), np.asarray(weights)
+    
+        # else:
+        #     results = [r for r in results if len(r) == 2]
+        #     if not results:
+        #         raise ValueError("Aucun batch sans poids valide.")
+        #     images, masks = zip(*results)
+        #     return np.asarray(images), np.asarray(masks)
+        
+        else:
+            results = [r for r in results if isinstance(r, tuple) and len(r) == 2]
+            if not results:
+                return np.empty((0, *self.TARGET_SIZE, 3)), np.empty((0, *self.TARGET_SIZE))
+            images, masks = zip(*results)
+            return np.asarray(images), np.asarray(masks)
+
     def on_epoch_end(self) -> None:
         """Mélange aléatoirement les couples (image, masque) à la fin de chaque époch si option activée, 
         pour améliorer la généralisation du modèle."""
@@ -227,8 +276,8 @@ class ImageSegmentationDataset(tf.keras.utils.PyDataset):
                 arr = img_array.astype(np.float32)
                 if needs_rescale:
                     arr = arr * 255.0
-                # resnet_preprocess_input gère conversion RGB->BGR et soustraction des moyennes ImageNet
-                return resnet_preprocess_input(arr)
+            # resnet_preprocess_input gère conversion RGB->BGR et soustraction des moyennes
+            return resnet_preprocess_input(arr)
         return img_array
     
     def load_img_to_array(self, img_path: pathlib.Path) -> np.ndarray:
@@ -360,11 +409,7 @@ class ImageSegmentationDataset(tf.keras.utils.PyDataset):
             if self.sample_weights is not None:
                 weights = np.take(self.sample_weights, mask)
                 if self.augmentations:
-                    # Correction bug : on passe 'weights' (poids flottants calculés)
-                    # et non 'mask' (identifiants de classes entiers 0-7) à Albumentations,
-                    # afin que les transformations géométriques s'appliquent bien à la carte
-                    # de poids et non aux labels bruts.
-                    augmented = self.compose(image=img, mask=mask, sample_weights=weights)
+                    augmented = self.compose(image=img, mask=mask, sample_weights=mask)
                     return (
                         augmented["image"],
                         augmented["mask"],
@@ -500,8 +545,15 @@ class ImageSegmentationDataset(tf.keras.utils.PyDataset):
         plt.tight_layout()
         plt.show()
         
+    
+        bbox = axs[2].get_tightbbox(fig.canvas.get_renderer())
+        bbox = bbox.transformed(fig.dpi_scale_trans.inverted())
+        
+        
         buf = io.BytesIO()
-        img_mask_pred = im2.savefig(buf, format='png')   
+        fig.savefig(buf, format='png', 
+                    bbox_inches=bbox
+                    )   
         buf.seek(0)
         
         encoded = base64.b64encode(buf.read()).decode('utf-8')

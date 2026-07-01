@@ -62,3 +62,6 @@ mlruns/
 *.keras
 *_tf/
 checkpoints/
+app_flask/test/*
+app_flask/api/__pycache__/__init__.cpython-310.pyc
+*.pyc
