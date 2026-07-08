@@ -501,7 +501,7 @@ class ImageSegmentationDataset(tf.keras.utils.PyDataset):
         plt.show()
         
         buf = io.BytesIO()
-        img_mask_pred = im2.savefig(buf, format='png')   
+        fig.savefig(buf, format='png')
         buf.seek(0)
         
         encoded = base64.b64encode(buf.read()).decode('utf-8')
