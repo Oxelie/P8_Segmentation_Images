@@ -29,35 +29,82 @@ class DiceFocalLoss(tf.keras.losses.Loss):
         self.dice_weight = dice_weight
         self.focal_weight = focal_weight
 
-    def call(self, y_true, y_pred):
-        # Dice Loss
-        # Convertit les labels sparse en one-hot
+    def call(self, y_true, y_pred, sample_weight=None):
+        # paramètres de la loss pondérée pixel par pixel, pour diminuer l'impact du déséquilibre des classes dans la loss finale ('human' plus rare que 'background' mais plus important à détecter)
+        ## y_true : shape (batch, H, W) avec des labels entiers (sparse) ici : (4, 256, 128) — un entier 0=>7 par pixel
+        ## y_pred : shape (batch, H, W, num_classes) avec des logits  ici : (4, 256, 128, 8) — un vecteur de 8 valeurs par pixel  (8 scores bruts par pixel)
+        ## sample_weight : shape (batch, H, W) ou None, pour pondérer la loss pixel par pixel ici :(4, 256, 128) — un float par pixel
+        
+        #### Dice Loss
+        # Convertion one-hot des labels sparse, chaque entier en un vecteur de 8 cases ici la shape : (4, 256, 128) => (4, 256, 128, 8)
         y_true_onehot = tf.one_hot(tf.cast(y_true, tf.int32), depth=self.num_classes)
-        # Applique softmax sur les prédictions
+        # conversion des logits bruts sans contraintes en proba avec softmax sur la dernière dimension de la pred, proba evidemment toutes positives, dont la somme fait 1 sur les 8 classes
         y_pred_softmax = tf.nn.softmax(y_pred, axis=-1)
-        # Aplati les masques pour le calcul
+        # pour chaque image du batch, aplatir les masques réels et pred pour simplifier le calcul matriciel en factorisant les dimensions spatiales H×W en une seule dimension (la surface de l'image)
+        # Avant : (4, 256, 128, 8) => 4 images, 256 lignes, 128 colonnes, 8 classes // Après : (4, 256*128, 8) => 4 images, 32768 pixels, 8 classes
+        # syntaxe : tf.reshape(tensor à reshape, [batch_size, -1 (calcul : aplati ce qui reste à cette position de la liste), num_classes (dernière dimension de la shape d'origine ici 8)]) 
         y_true_flat = tf.reshape(y_true_onehot, [tf.shape(y_true_onehot)[0], -1, self.num_classes])
         y_pred_flat = tf.reshape(y_pred_softmax, [tf.shape(y_pred_softmax)[0], -1, self.num_classes])
+        # Formule du Dice coefficient : 2 × |A ∩ B| / (|A| + |B|)
+        # les tenseurs y_true_flat et y_pred_flat sont de shape (batch, H*W, num_classes) 
         # Calcule intersection et union
+        # intersection : produit pixel par pixel entre les masques réels et prédits, puis somme sur les pixels de chaque image du batch, pour chaque classe, => shape (batch, num_classes) 
+        # Le 0 du one-hot annule automatiquement toutes les mauvaises classes, seule la vraie classe contribue. Plus le modèle est confiant et correct, plus l'intersection est élevée (y_true=1, y_pred=0,85 résultat => 0,85 // y_true =0, y_pred=0,85 résultat => 0)
         intersection = tf.reduce_sum(y_true_flat * y_pred_flat, axis=1)
+        # union : somme des masques réels et prédits sur les pixels de chaque image du batch, pour chaque classe, => shape (batch, num_classes)
+        # somme sur les pixels séparément les deux tenseurs réels et pred, puis on fait après une addition scalaire sur les 2 tenseurs => shape (batch, num_classes) 
         union = tf.reduce_sum(y_true_flat, axis=1) + tf.reduce_sum(y_pred_flat, axis=1)
-        # Calcule le Dice coefficient et la perte associée.
+        # Calcule le Dice coefficient et la perte associée
+        # formule = 2 × intersection / union oblige le score à être élevé seulement quand le réel et le prédit s'accordent
+        # dice_smooth (1e-5) évite la division par zéro si une classe est absente de l'image
         dice = (2.0 * intersection + self.dice_smooth) / (union + self.dice_smooth)
-        dice_loss = 1.0 - tf.reduce_mean(dice)
+        dice_loss = 1.0 - tf.reduce_mean(dice) # le Dice coefficient parfait vaut 1.0, donc la loss vaut 0.0 si parfait, 1.0 si nul
 
-        # Focal Loss
-        # Évite les log(0) avec un clipping
-        epsilon = tf.keras.backend.epsilon()
-        y_pred_clipped = tf.clip_by_value(y_pred_softmax, epsilon, 1.0 - epsilon)
-        # Calcule la cross-entropy pixel par pixel
+        ### Focal Loss avec pondération pixel par pixel
+        # Évite les log(0) qui donnerait -inf avec un clipping
+        epsilon = tf.keras.backend.epsilon() # 1e-7
+        # Si une proba vaut exactement 0.0, on la remplace par 1e-7, si elle vaut exactement 1.0, on la remplace par 1 - 1e-7
+        y_pred_clipped = tf.clip_by_value(y_pred_softmax, epsilon, 1.0 - epsilon) 
+        # erreur par pixel par classe : shape (batch, H, W, num_classes), cross-entropy standard par pixel et par classe
+        # log(proba) est négatif (car proba ∈ ]0,1[), donc le - devant le rend positif. 
+        # La multiplication par y_true_onehot annule toutes les classes sauf la vraie, elle seule contribue au calcul de la loss 
+        # si modèle est confiant et correct, -log(proba) (la loss calculée) est faible
+        # si modèle confiant et faux, la loss calculée  est très élevée et le modèle sera plus pénalisé
+        # si le modèle est incertain (proba proche de 0.5) et correct, la Loss est modérée => le modèle sera pénalisé pour son manque de confiance, il doit encore s'améliorer
+        # si le modèle est incertain et faux, la Loss est élévée mais moins que lorsque confiant et faux => pénalisé, mais moins fort que si le modèle était sur de lui et faux
         cross_entropy = -y_true_onehot * tf.math.log(y_pred_clipped)
-        # Applique le modulateur focal (plus de poids aux exemples difficiles)
-        focal = self.focal_alpha * tf.pow(1 - y_pred_clipped, self.focal_gamma) * cross_entropy
-        # moyenne la perte sur le batch
-        focal_loss = tf.reduce_mean(tf.reduce_sum(focal, axis=-1))
+        focal_map = self.focal_alpha * tf.pow(1 - y_pred_clipped, self.focal_gamma) * cross_entropy
+        # une erreur par pixel individuel : somme sur les 8 classes pour obtenir une seule valeur d'erreur par pixel, toujours grâce au onehot, seule la vraie classe contribue shape (batch, H, W)
+        # Shape : (4, 256, 128, 8) => (4, 256, 128) 
+        focal_per_pixel = tf.reduce_sum(focal_map, axis=-1)
 
-        # Combo
+        # applique les poids par pixel AVANT la réduction globale (on multiplie l'erreur de chaque pixel par son poids de classe, avant de faire la moyenne)
+        if sample_weight is not None:
+            # erreur_finale_pixel = erreur_focal_pixel × poids_classe_du_pixel. 
+            
+            focal_per_pixel = focal_per_pixel * tf.cast(sample_weight, focal_per_pixel.dtype) # cast assure que les types correspondent (float32)
+
+        # moyenne la perte sur le batch
+        # les classes rares ayant un poids plus élevé, leurs pixels contribuent plus à la loss finale que les pixels des classes fréquentes
+        focal_loss = tf.reduce_mean(focal_per_pixel)
+
         return self.dice_weight * dice_loss + self.focal_weight * focal_loss
+        
+        # # somme sur les classes → shape (batch, H, W)
+        
+        
+        # # applique les poids par pixel AVANT la réduction globale
+        
+        
+        # # Calcule la cross-entropy pixel par pixel
+        # cross_entropy = -y_true_onehot * tf.math.log(y_pred_clipped)
+        # # Applique le modulateur focal (plus de poids aux exemples difficiles)
+        # focal = self.focal_alpha * tf.pow(1 - y_pred_clipped, self.focal_gamma) * cross_entropy
+        # # moyenne la perte sur le batch
+        # focal_loss = tf.reduce_mean(tf.reduce_sum(focal, axis=-1))
+
+        # # Combo
+        # return self.dice_weight * dice_loss + self.focal_weight * focal_loss
 
     # sauvegarde de l'état et des paramètres de la loss pour pour le reload du modèle (=sérialisation de la loss)
     def get_config(self):
