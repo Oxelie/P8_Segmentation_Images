@@ -24,6 +24,7 @@ import albumentations as A
 import tensorflow as tf
 from keras.applications.mobilenet_v3 import preprocess_input as mnv3_preprocess_input
 from tensorflow.keras.applications.resnet50 import preprocess_input as resnet_preprocess_input
+from keras.applications.vgg16 import preprocess_input as vgg16_preprocess_input
 
 
 tf.config.threading.set_intra_op_parallelism_threads(8)
@@ -220,7 +221,10 @@ class ImageSegmentationDataset(tf.keras.utils.PyDataset):
             if self.model_name in ["unet", "unet_mini"]:
                 return img_array / 255.0
             elif self.model_name == "vgg16_unet": 
-                return (img_array / 127.5) - 1.0
+                arr = img_array.astype(np.float32)
+                if needs_rescale:
+                    arr = arr * 255.0
+                return vgg16_preprocess_input(arr)
             elif self.model_name == "mobilenetv3small_unet":
                 return mnv3_preprocess_input(img_array)
             elif self.model_name in ["resnet50_unet", "resnet_unet"]:
