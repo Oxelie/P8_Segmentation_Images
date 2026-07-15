@@ -208,12 +208,18 @@ Python 3.10+. Dépendances principales :
 tensorflow==2.16.2
 keras==3.10.0
 numpy==1.26.4
-albumentations==2.0.8
-matplotlib==3.10.0
+pandas
+scikit-learn
 Pillow==11.1.0
-Flask==3.1.0
+albumentations==2.0.8
+opencv-python-headless
+matplotlib==3.10.0
+seaborn
+mlflow
 pytest==8.4.1
 ```
+
+> L'API (`P8_api_app`) et le frontend (`P8_front_app`) ont leurs propres `requirements.txt`.
 
 ```bash
 pip install -r requirements.in
