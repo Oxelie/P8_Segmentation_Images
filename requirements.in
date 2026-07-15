@@ -1,9 +1,26 @@
-albumentations==2.0.8
-Flask==3.1.0
-keras==3.10.0
-matplotlib==3.10.0
-numpy==1.26.4
-Pillow==11.1.0
-pytest==8.4.1
-Requests==2.32.4
+# Entraînement & notebooks — P8_Segmentation_Images
+# L'API (P8_api_app) et le frontend (P8_front_app) ont leurs propres requirements.txt
+
+# Deep Learning
 tensorflow==2.16.2
+keras==3.10.0
+
+# Data & calcul
+numpy==1.26.4
+pandas
+scikit-learn
+
+# Vision & augmentation
+Pillow==11.1.0
+albumentations==2.0.8
+opencv-python-headless
+
+# Visualisation
+matplotlib==3.10.0
+seaborn
+
+# Suivi expérimental
+mlflow
+
+# Tests
+pytest==8.4.1
