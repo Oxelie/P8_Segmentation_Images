@@ -222,5 +222,5 @@ pytest==8.4.1
 > L'API (`P8_api_app`) et le frontend (`P8_front_app`) ont leurs propres `requirements.txt`.
 
 ```bash
-pip install -r requirements.in
+pip install -r requirements.txt
 ```
