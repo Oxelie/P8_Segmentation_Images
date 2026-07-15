@@ -11,6 +11,15 @@ Développement d'un pipeline de segmentation sémantique d'images urbaines pour 
 
 ---
 
+## Branches Git
+
+| Branche | Usage |
+|---------|-------|
+| `main` | Production — code stable |
+| `develop` | Développement actif |
+
+---
+
 ## Données
 
 Source : [Cityscapes Dataset](https://www.cityscapes-dataset.com/) — images de conduite urbaine annotées pixel par pixel.
@@ -188,15 +197,6 @@ random.seed(SEED)
 np.random.seed(SEED)
 tf.random.set_seed(SEED)
 ```
-
----
-
-## Branches Git
-
-| Branche | Usage |
-|---------|-------|
-| `main` | Production — code stable |
-| `develop` | Développement actif |
 
 ---
 
