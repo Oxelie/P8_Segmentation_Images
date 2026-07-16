@@ -35,16 +35,16 @@ Source : [Cityscapes Dataset](https://www.cityscapes-dataset.com/) — images de
 
 ### Classes retenues (agrégation Cityscapes)
 
-| Classe | Contenu | Criticité sécurité |
-|--------|---------|-------------------|
-| `flat` | Route, trottoir | — |
-| `human` | Piétons, cyclistes | ⚠️ Critique |
-| `vehicle` | Voitures, bus, motos | ⚠️ Critique |
-| `construction` | Bâtiments, murs, clôtures | — |
-| `object` | Panneaux, poteaux, feux | Élevée |
-| `nature` | Végétation, terrain | — |
-| `sky` | Ciel | — |
-| `void` | Non étiqueté, hors ROI | — |
+| ID | Classe | Contenu | Criticité sécurité |
+|----|--------|---------|-------------------|
+| 0 | `void` | Non étiqueté, hors ROI | — |
+| 1 | `flat` | Route, trottoir | — |
+| 2 | `construction` | Bâtiments, murs, clôtures | — |
+| 3 | `object` | Panneaux, poteaux, feux | Élevée |
+| 4 | `nature` | Végétation, terrain | — |
+| 5 | `sky` | Ciel | — |
+| 6 | `human` | Piétons, cyclistes | ⚠️ Critique |
+| 7 | `vehicle` | Voitures, bus, motos | ⚠️ Critique |
 
 > Le jeu de test officiel Cityscapes n'étant pas annoté publiquement, le jeu de validation original est utilisé en tant que jeu de test. Un split `val → test` est documenté dans `data.ipynb`.
 
