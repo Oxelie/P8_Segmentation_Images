@@ -47,14 +47,14 @@ class ImageSegmentationDataset(tf.keras.utils.PyDataset):
     
     # dictionnaire des poids des classes pour gérer le déséquilibre (cf data.ipynb)
     CLASS_WEIGHTS = {
-    0: 0.04838020974460775,   # flat         (route, trottoir)
-    1: 0.012538762170933082,  # human        (piétons, cyclistes) — classe critique sécurité
-    2: 0.022200139451355013,  # vehicle      (voitures, bus, motos)
-    3: 0.2756301963795006,    # construction (bâtiments, murs)
-    4: 0.032171216040987854,  # object       (panneaux, feux)
-    5: 0.1366674770648851,    # nature       (végétation)
-    6: 0.4062850567550318,    # sky          (ciel)
-    7: 0.0661269423926988,    # void         (non étiqueté)
+    0: 0.04838020974460775,   # void         (non étiqueté)
+    1: 0.012538762170933082,  # flat         (route, trottoir)
+    2: 0.022200139451355013,  # construction (bâtiments, murs)
+    3: 0.2756301963795006,    # object       (panneaux, feux)
+    4: 0.032171216040987854,  # nature       (végétation)
+    5: 0.1366674770648851,    # sky          (ciel)
+    6: 0.4062850567550318,    # human        (piétons, cyclistes) — classe critique sécurité
+    7: 0.0661269423926988,    # vehicle      (voitures, bus, motos)
     }
    
     # Initialisation de l'objet dataset
