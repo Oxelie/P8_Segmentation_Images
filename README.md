@@ -11,6 +11,15 @@ Développement d'un pipeline de segmentation sémantique d'images urbaines pour 
 
 ---
 
+## Dépôts liés
+
+| Dépôt | Description | Lien |
+|-------|-------------|------|
+| API Flask | Backend — expose le modèle de segmentation | [Oxelie/P8_api_app](https://github.com/Oxelie/P8_api_app) |
+| Application Streamlit | Frontend — interface de démonstration | [Oxelie/P8_front_app](https://github.com/Oxelie/P8_front_app) |
+
+---
+
 ## Branches Git
 
 | Branche | Usage |
