@@ -1,5 +1,0 @@
-$kind: http-request
-name: request_img_list
-url: ""
-method: GET
-order: 1772745777069
