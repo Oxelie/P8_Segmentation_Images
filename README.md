@@ -97,8 +97,6 @@ Combinaison **Dice Loss + Focal Loss** (`DiceFocalLoss`, définie dans `custom_o
 | **Pixel Accuracy** | % de pixels correctement classés |
 | **IoU par classe** | Dont `IoU_human` et `IoU_object`, indicateurs critiques pour la sécurité |
 
-> La décision de classe par pixel repose sur un `argmax` sur les 8 probabilités softmax — pas sur un seuil Dice.
-
 ---
 
 ## Résultats
