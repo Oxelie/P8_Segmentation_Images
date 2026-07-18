@@ -97,23 +97,26 @@ Combinaison **Dice Loss + Focal Loss** (`DiceFocalLoss`, définie dans `custom_o
 | **Pixel Accuracy** | % de pixels correctement classés |
 | **IoU par classe** | Dont `IoU_human` et `IoU_object`, indicateurs critiques pour la sécurité |
 
-> La décision de classe par pixel repose sur un `argmax` sur les 8 probabilités softmax — pas sur un seuil Dice.
-
 ---
 
 ## Résultats
 
-*Les résultats définitifs seront renseignés après réentraînement complet du benchmark (corrections de code appliquées).*
+Benchmark complet — expérience MLflow `733779452140988414` :
 
-| Architecture | mIoU val | Dice val | IoU human val | Taille modèle |
-|---|---|---|---|---|
-| UNet-mini | — | — | — | — |
-| MobileNetV3 (gelé) | — | — | — | — |
-| MobileNetV3 (fine-tuning) | — | — | — | — |
-| ResNet50 (gelé) | — | — | — | — |
-| ResNet50 (fine-tuning) | — | — | — | — |
+| Architecture | Stratégie | mIoU val | Dice val | IoU human val | IoU vehicle val | Taille modèle | Durée |
+|---|---|---|---|---|---|---|---|
+| UNet-mini | from scratch | 0.349 | 0.430 | 0.011 | 0.202 | ~2 Mo | 11,7 min |
+| MobileNetV3Small | encodeur gelé | 0.601 | 0.639 | 0.328 | 0.690 | ~12 Mo | 2,6 h |
+| VGG16 | encodeur gelé | 0.562 | 0.604 | 0.385 | 0.000 ⚠️ | ~70 Mo | 2,4 h |
+| ResNet50 | encodeur gelé | 0.742 | 0.768 | 0.610 | 0.841 | ~314 Mo | 3,1 h |
+| MobileNetV3Small | fine-tuning | 0.661 | 0.696 | 0.418 | 0.749 | ~12 Mo | 8,3 h |
+| **ResNet50** | **fine-tuning ✅** | **0.762** | **0.789** | **0.656** | **0.855** | **~314 Mo** | **6,8 h** |
+| MobileNetV3Small | optim. + augmentation | 0.652 | 0.691 | 0.385 | 0.747 | ~12 Mo | 10,1 h |
+| ResNet50 | optim. + augmentation | en cours | en cours | — | — | ~314 Mo | en cours |
 
-**Modèle retenu pour le déploiement :** MobileNetV3Small-UNet — meilleur compromis performance / taille pour un système embarqué.
+> VGG16 écarté : IoU vehicle = 0.000 sur tous les splits (anomalie non résolue).
+
+**Modèle retenu pour le déploiement :** ResNet50-UNet fine-tuning — meilleures performances globales (val_dice 0.789, val_mIoU 0.762). La taille (~314 Mo) dépasse les contraintes embarquées idéales — MobileNetV3Small reste une alternative sérieuse pour une mise en production réelle.
 
 ---
 
