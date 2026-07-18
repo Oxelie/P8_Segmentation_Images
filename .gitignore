@@ -1,18 +1,36 @@
-data/*
-data_raw/*
-mlruns/*
-.lh/*
+# Données
+data/
+data_raw/
+mlruns/
+mlf_1/
+mlf_1_arti/
 
-data/test/frankfurt_000000_000294_leftImg8bit.png
-data_raw/P8_Cityscapes_gtFine_trainvaltest/gtFine/test/berlin/berlin_000000_000019_gtFine_color.png
-__pycache__/*
+# Modèles entraînés
+*.keras
+*.h5
+*_tf/
+old_models/
+checkpoints/
+models/
 
-tests/.DS_Store
-streamlit-segmentation-app/src/.DS_Store
-streamlit-segmentation-app/.DS_Store
-count_classes/class_counter_full_train_datagen.pkl
-
+# Artefacts divers
+count_classes/
 full_train_datagen.pkl
+__pycache__/
+*.pyc
+
+# Environnements virtuels
+env_p8_chantepie/
+
+# App Flask (dépôt séparé)
+app_flask/test/
+
+# Outils IDE / Live Helper
+.lh/
 .DS_Store
+tests/.DS_Store
+
+# Notebooks de travail
 modelisation_p2.ipynb
 notes.ipynb
+Untitled-1.ipynb
