@@ -105,12 +105,12 @@ Benchmark complet — expérience MLflow `733779452140988414` :
 | Architecture | Stratégie | mIoU val | Dice val | IoU human val | IoU vehicle val | Taille modèle | Durée |
 |---|---|---|---|---|---|---|---|
 | UNet-mini | from scratch | 0.349 | 0.430 | 0.011 | 0.202 | ~2 Mo | 11,7 min |
-| MobileNetV3Small | encodeur gelé | 0.601 | 0.639 | 0.328 | 0.690 | ~12 Mo | 2,6 h |
-| VGG16 | encodeur gelé | 0.562 | 0.604 | 0.385 | 0.000 ⚠️ | ~70 Mo | 2,4 h |
+| MobileNetV3Small | encodeur gelé | 0.601 | 0.639 | 0.328 | 0.690 | ~17 Mo | 2,6 h |
+| VGG16 | encodeur gelé | 0.562 | 0.604 | 0.385 | 0.000 ⚠️ | ~119 Mo | 2,4 h |
 | ResNet50 | encodeur gelé | 0.742 | 0.768 | 0.610 | 0.841 | ~314 Mo | 3,1 h |
-| MobileNetV3Small | fine-tuning | 0.661 | 0.696 | 0.418 | 0.749 | ~12 Mo | 8,3 h |
+| MobileNetV3Small | fine-tuning | 0.661 | 0.696 | 0.418 | 0.749 | ~17 Mo | 8,3 h |
 | **ResNet50** | **fine-tuning ✅** | **0.762** | **0.789** | **0.656** | **0.855** | **~314 Mo** | **6,8 h** |
-| MobileNetV3Small | optim. + augmentation | 0.652 | 0.691 | 0.385 | 0.747 | ~12 Mo | 10,1 h |
+| MobileNetV3Small | optim. + augmentation | 0.652 | 0.691 | 0.385 | 0.747 | ~17 Mo | 10,1 h |
 | ResNet50 | optim. + augmentation | 0.761 | 0.788 | 0.645 | 0.854 | ~314 Mo | 12,2 h |
 
 > VGG16 écarté : IoU vehicle = 0.000 sur tous les splits (anomalie non résolue).
