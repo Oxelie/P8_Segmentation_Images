@@ -1,67 +1,34 @@
+# Données (trop volumineuses pour git)
 data/
 data_raw/
-mlruns/*
-.lh/*
-.lh/.lhignore
-.lh/.gitignore.json
-.DS_Store
-modelisation_p2.ipynb
-notes.ipynb
-env_p8_chantepie
-env_p8_chantepie/
-.lh/utils_p8.py.json
-.lh/classe_dataset.py.json
-.gitignore
-.gitignore
-__pycache__/utils_p8.cpython-310.pyc
-.gitignore
-.lh/count_classes.py.json
-full_train_datagen.pkl
-.gitignore
-__pycache__/classe_dataset.cpython-310.pyc
-count_classes/class_counter_full_train_datagen.pkl
-.lh/requirements.txt.json
-.lh/api/api.py.json
-.lh/api/Procfile.json
-.gitignore
-.lh/api/requirements.txt.json
-model_tf/fingerprint.pb
-model_tf/saved_model.pb
-.gitignore
-model_tf/variables/variables.index
-.gitignore
-model_tf/variables/variables.data-00000-of-00001
-.gitignore
-*.keras
-*.h5
-modelUNet_mini_tf/variables/variables.data-00000-of-00001
-modelUNet_mini_tf/fingerprint.pb
-modelUNet_mini_tf/saved_model.pb
-modelUNet_mini_tf/variables/variables.index
-modelVGG16_UNet_tf/fingerprint.pb
-.gitignore
-modelVGG16_UNet_tf/variables/variables.data-00000-of-00001
-.gitignore
-modelVGG16_UNet_tf/saved_model.pb
-modelVGG16_UNet_tf/variables/variables.index
-modelMobileNetV3Small_UNet_tf/fingerprint.pb
-.gitignore
-modelMobileNetV3Small_UNet_tf/saved_model.pb
-modelMobileNetV3Small_UNet_tf/variables/variables.data-00000-of-00001
-modelMobileNetV3Small_UNet_tf/variables/variables.index
-mlf_1/*
-mlf_1_arti/*
-modelMobileNetV3Small_UNet_finetuned_no_datagen_tf/fingerprint.pb
-modelMobileNetV3Small_UNet_finetuned_no_datagen_tf/saved_model.pb
-modelMobileNetV3Small_UNet_finetuned_no_datagen_tf/variables/variables.data-00000-of-00001
-modelMobileNetV3Small_UNet_finetuned_no_datagen_tf/variables/variables.index
-streamlit-segmentation-app/src/__pycache__/api_client.cpython-310.pyc
-old_models/
+
+# MLflow — tracking et artifacts
 mlruns/
-*.h5
+mlf_1/
+mlf_1_arti/
+
+# Modèles sauvegardés
 *.keras
+*.h5
 *_tf/
+models/
+old_models/
 checkpoints/
-app_flask/test/*
-app_flask/api/__pycache__/__init__.cpython-310.pyc
+
+# Fichiers Python compilés
 *.pyc
+__pycache__/
+
+# Environnement virtuel
+env_p8_chantepie/
+
+# Fichiers de cache divers
+full_train_datagen.pkl
+count_classes/
+
+# Éditeur / IDE
+.lh/
+.DS_Store
+
+# Notebooks de brouillon (non livrables)
+notes.ipynb
