@@ -255,23 +255,6 @@ class ImageSegmentationDataset(tf.keras.utils.PyDataset):
             img_array = tf.image.resize(img_array, self.TARGET_SIZE, method="bilinear").numpy()
         return self.preprocess_img(img_array)
 
-    # def load_mask_to_array(self, mask_path: pathlib.Path) -> np.ndarray:
-    #     """load en niveau de gris, resize un masque,
-    #     remplace pour chaque pixel les IDs des labels par les IDs des catégories mères correspondantes,
-    #     si spécifié, convertit le masque en one-hot encoding."""
-    #     mask = tf.keras.utils.load_img(
-    #         str(mask_path),
-    #         target_size=self.TARGET_SIZE,
-    #         color_mode="grayscale",
-    #         interpolation="nearest",
-    #     )
-    #     mask_array = tf.keras.utils.img_to_array(mask, dtype=np.int8)
-    #     mask_array = np.vectorize(self.table_id2category.get)(mask_array).squeeze()
-    #     if self.label_onehot:
-    #         mask_array = tf.keras.utils.to_categorical(
-    #             mask_array, num_classes=self.num_classes
-    #         )
-    #     return mask_array
     
     def load_mask_to_array(self, mask_path: pathlib.Path) -> np.ndarray:
         """
@@ -442,34 +425,7 @@ class ImageSegmentationDataset(tf.keras.utils.PyDataset):
         plt.tight_layout()
         plt.show()
 
-    # def show_prediction(
-    #     self, model: Any, index: int, figsize: Tuple[int, int] = (15, 6)
-    # ) -> None:
-    #     """affiche l'image originale, le masque d'origine (réalité terrain) et le masque prédit du modèle pour un échantillon"""
-    #     img, mask, paths = self.get_image_and_mask(index)
-    #     img_path, mask_path = paths
-    #     mask_pred = self.get_prediction(model, index)
 
-    #     orig_img = np.array(Image.open(img_path))
-
-    #     if self.label_onehot:
-    #         mask = np.argmax(mask, axis=-1)
-    #     if isinstance(self.normalize, str):
-    #         img = (img - img.min()) / (img.max() - img.min())
-
-    #     fig, axs = plt.subplots(1, 3, figsize=figsize)
-    #     fig.suptitle(f"{model.name} Predictions", fontsize=16)
-
-    #     axs[0].imshow(orig_img)
-    #     axs[0].set_title("Original Image")
-    #     axs[1].imshow(mask, cmap="Greys")
-    #     axs[1].set_title("Ground Truth Mask")
-    #     axs[2].imshow(mask_pred, cmap="Greys")
-    #     axs[2].set_title("Predicted Mask")
-    #     for ax in axs:
-    #         ax.axis("off")
-    #     plt.tight_layout()
-    #     plt.show()
     
     def show_prediction(
         self, model: Any, index: int, figsize: Tuple[int, int] = (15, 6)
