@@ -112,11 +112,11 @@ Benchmark complet — expérience MLflow `733779452140988414` :
 | MobileNetV3Small | fine-tuning | 0.661 | 0.696 | 0.418 | 0.749 | ~12 Mo | 8,3 h |
 | **ResNet50** | **fine-tuning ✅** | **0.762** | **0.789** | **0.656** | **0.855** | **~314 Mo** | **6,8 h** |
 | MobileNetV3Small | optim. + augmentation | 0.652 | 0.691 | 0.385 | 0.747 | ~12 Mo | 10,1 h |
-| ResNet50 | optim. + augmentation | en cours | en cours | — | — | ~314 Mo | en cours |
+| ResNet50 | optim. + augmentation | 0.761 | 0.788 | 0.645 | 0.854 | ~314 Mo | 12,2 h |
 
 > VGG16 écarté : IoU vehicle = 0.000 sur tous les splits (anomalie non résolue).
 
-**Modèle retenu pour le déploiement :** ResNet50-UNet fine-tuning — meilleures performances globales (val_dice 0.789, val_mIoU 0.762). La taille du modèle (~314 Mo) dépasse les contraintes embarquées idéales — MobileNetV3Small constitue une alternative sérieuse pour une mise en production réelle.
+**Modèle retenu pour le déploiement :** ResNet50-UNet fine-tuning — meilleures performances globales (val_dice 0.789, val_mIoU 0.762). La data augmentation n'apporte pas de gain significatif sur ResNet50 (Δval_dice = −0.001, Δval_IoU_human = −0.011) pour un coût double en temps d'entraînement (12,2 h vs 6,8 h). La taille (~314 Mo) dépasse les contraintes embarquées idéales — MobileNetV3Small reste une alternative sérieuse pour une mise en production réelle.
 
 ---
 
