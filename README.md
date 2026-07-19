@@ -7,7 +7,7 @@ Développement d'un pipeline de segmentation sémantique d'images urbaines pour 
 
 ## Contexte
 
-**Future Vision Transport** est une entreprise spécialisée dans les systèmes embarqués pour véhicules autonomes. L'objectif est de concevoir un modèle de segmentation sémantique capable d'identifier et de délimiter les différentes zones d'une scène urbaine (route, piétons, véhicules, bâtiments…) à partir d'images RGB, afin d'alimenter les systèmes de décision du véhicule.
+**Future Vision Transport** est une entreprise spécialisée dans les systèmes embarqués pour véhicules autonomes. L'objectif est de concevoir un modèle de segmentation d'image capable d'identifier et de délimiter les différentes zones d'une scène urbaine (route, piétons, véhicules, bâtiments…) à partir d'images RGB, afin d'alimenter les systèmes de décision du véhicule.
 
 ---
 
@@ -55,7 +55,7 @@ Source : [Cityscapes Dataset](https://www.cityscapes-dataset.com/) — images de
 | 6 | `human` | Piétons, cyclistes | ⚠️ Critique |
 | 7 | `vehicle` | Voitures, bus, motos | ⚠️ Critique |
 
-> Le jeu de test officiel Cityscapes n'étant pas annoté publiquement, le jeu de validation original est utilisé en tant que jeu de test. Un split `val → test` est documenté dans `data.ipynb`.
+> Le jeu de test officiel Cityscapes n'étant pas annoté publiquement, le jeu de validation original est utilisé en tant que jeu de test. Le split `val → test` est documenté dans `data.ipynb`.
 
 ---
 
@@ -82,9 +82,8 @@ Combinaison **Dice Loss + Focal Loss** (`DiceFocalLoss`, définie dans `custom_o
 - **Dice Loss** : mesure le chevauchement entre masque prédit et masque réel (robuste au déséquilibre de classes)
 - **Focal Loss** : amplifie la pénalité sur les pixels difficiles (faible confiance du modèle)
 - **Pondération pixel par pixel** : chaque pixel est pondéré selon sa classe (`sample_weight`), calculé à partir de la distribution de pixels dans `data.ipynb`
-- Poids appliqués **avant** la réduction (`reduce_mean`), afin que les classes rares (`human`, `object`) influencent réellement le gradient
+- Les poids sont appliqués **avant** la réduction (`reduce_mean`), afin que les classes rares (`human`, `object`) influencent réellement le gradient
 
-> Le modèle ne contient **pas** d'activation softmax en sortie : la `DiceFocalLoss` applique son propre softmax en interne.
 
 ---
 
