@@ -124,23 +124,27 @@ Benchmark complet — expérience MLflow `733779452140988414` :
 ```
 P8_Segmentation_Images/
 │
-├── classe_dataset.py          # Générateur de données Keras (ImageSegmentationDataset)
-├── custom_object.py           # DiceFocalLoss + DiceMetric (objets Keras custom)
-├── utils_p8.py                # Fonctions utilitaires (visualisation, métriques)
+├── scripts/
+│   ├── classe_dataset.py      # Générateur de données Keras (ImageSegmentationDataset)
+│   ├── utils_p8.py            # Fonctions utilitaires (visualisation, métriques)
+│   └── count_classes.py       # Calcul distribution des classes (CLI)
 │
-├── models.ipynb               # Entraînements, comparaison architectures, suivi MLflow
-├── data.ipynb                 # EDA, distribution des classes, calcul des poids, split val→test
+├── notebooks/
+│   ├── models.ipynb           # Entraînements, comparaison architectures, suivi MLflow
+│   └── data.ipynb             # EDA, distribution des classes, calcul des poids, split val→test
 │
 ├── data/
 │   ├── train/                 # Images + masques d'entraînement (Cityscapes)
 │   ├── test/                  # Images + masques de test (subset val Cityscapes)
 │   └── models/                # Modèles sauvegardés (.keras)
 │
-├── mlruns/                    # Expériences MLflow (tracking local)
-├── mlf_1/                     # Artifacts MLflow complémentaires
+├── mlruns/                    # Tracking MLflow (local)
+├── mlf_1/                     # Métadonnées MLflow complémentaires
+├── mlf_1_arti/                # Artifacts MLflow (modèles, figures)
 │
-├── tests/                     # Tests unitaires (pytest)
-└── requirements.in            # Dépendances du projet
+├── README.md
+├── requirements.txt           # Dépendances du projet
+└── .gitignore
 ```
 
 > L'API et le frontend sont maintenus dans des dépôts indépendants (`P8_api_app` et `P8_front_app`).
