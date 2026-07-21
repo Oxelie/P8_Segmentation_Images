@@ -107,17 +107,19 @@ Benchmark complet — expérience MLflow `733779452140988414` :
 | UNet-mini | from scratch | 0.349 | 0.430 | 0.011 | 0.202 | ~2 Mo | 11,7 min |
 | MobileNetV3Small | encodeur gelé | 0.601 | 0.639 | 0.328 | 0.690 | ~17 Mo | 2,6 h |
 | VGG16 | encodeur gelé | 0.562 | 0.604 | 0.385 | 0.000 ⚠️ | ~119 Mo | 2,4 h |
-| ResNet50 | encodeur gelé | 0.742 | 0.768 | 0.610 | 0.841 | ~314 Mo | 3,1 h |
+| ResNet50 | encodeur gelé | 0.742 | 0.768 | 0.610 | 0.841 | ~494 Mo | 3,1 h |
 | MobileNetV3Small | fine-tuning | 0.661 | 0.696 | 0.418 | 0.749 | ~17 Mo | 8,3 h |
-| **ResNet50** | **fine-tuning ✅** | **0.762** | **0.789** | **0.656** | **0.855** | **~314 Mo** | **6,8 h** |
+| **ResNet50** | **fine-tuning ✅** | **0.762** | **0.789** | **0.656** | **0.855** | **~494 Mo** | **6,8 h** |
 | MobileNetV3Small | optim. + augmentation | 0.652 | 0.691 | 0.385 | 0.747 | ~17 Mo | 10,1 h |
-| ResNet50 | optim. + augmentation | 0.761 | 0.788 | 0.645 | 0.854 | ~314 Mo | 12,2 h |
+| ResNet50 | optim. + augmentation | 0.760 | 0.787 | 0.639 | 0.854 | ~494 Mo | 12,2 h |
 
 > VGG16 écarté : IoU vehicle = 0.000 sur tous les splits (anomalie non résolue).
 
-**Meilleur modèle (métriques) :** ResNet50-UNet fine-tuning — meilleures performances globales (val_dice 0.789, val_mIoU 0.762). La data augmentation n'apporte pas de gain significatif sur ResNet50 (Δval_dice = −0.001, Δval_IoU_human = −0.011) pour un coût double en temps d'entraînement (12,2 h vs 6,8 h).
+**Meilleur modèle (métriques) :** ResNet50-UNet fine-tuning — meilleures performances globales (val_dice 0.789, val_mIoU 0.762). La data augmentation n'apporte pas de gain significatif sur ResNet50 (Δval_dice = −0.002, Δval_IoU_human = −0.017) pour un coût double en temps d'entraînement (12,2 h vs 6,8 h).
 
-**Modèle déployé pour la démonstration :** MobileNetV3Small-UNet fine-tuning (~17 Mo, val_dice 0.696) — choix pragmatique pour la démo sur CPU Azure B1. ResNet50 (~314 Mo) induisait 30 à 60 s par prédiction, incompatible avec une démonstration fluide. MobileNetV3Small offre un bon compromis performance / latence dans ce contexte.
+> ⚠️ **Limite embarquée :** ResNet50-UNet (~494 Mo, ~25 M+ paramètres) n'est pas compatible avec un déploiement embarqué temps réel. La latence d'inférence mesurée sur CPU Azure B1 (1 vCPU, 1,75 Go RAM) est d'environ **0,39 s par image (~2,5 fps)**. Pour un système embarqué sur véhicule autonome, une inférence inférieure à 100 ms est généralement requise (≥ 10 fps). Au-delà de la latence, le poids du modèle (~494 Mo) est lui aussi incompatible avec la plupart des architectures embarquées contraintes en mémoire. ResNet50 est défendu comme **upper bound de performance** pour ce benchmark ; un déploiement embarqué réel nécessiterait MobileNetV3Small (voire une quantification TFLite supplémentaire).
+
+**Modèle déployé pour la démonstration :** MobileNetV3Small-UNet fine-tuning (~17 Mo, val_dice 0.696) — choix pragmatique pour la démo sur CPU Azure B1 et candidat naturel pour un déploiement embarqué contraint. MobileNetV3Small offre un bon compromis performance / taille / latence dans ce contexte.
 
 ---
 
